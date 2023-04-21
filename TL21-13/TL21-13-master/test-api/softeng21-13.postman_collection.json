@@ -1,0 +1,645 @@
+{
+	"info": {
+		"_postman_id": "57206e24-34f7-4e13-96ef-7f571776c6c6",
+		"name": "softeng21-13",
+		"description": "A collection of API endpoints for a project about the interoperability of Greece's toll system.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Base URL Screen",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//successful call\r",
+							"pm.test(\"Status is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}",
+					"host": [
+						"{{baseURL}}"
+					]
+				},
+				"description": "It returns a message about the available endpoints containing GET and POST methods."
+			},
+			"response": []
+		},
+		{
+			"name": "API Status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if ( pm.response.code ==200 ) {\r",
+							"    pm.test(\"Connection is ok and status code is 200\", function () {\r",
+							"        pm.response.to.have.status(200);\r",
+							"        var jsonData = pm.response.json();\r",
+							"        pm.expect(jsonData.status).to.eql(\"OK\");\r",
+							"        pm.expect(jsonData.dbconnection).to.eql(\"softeng2113\");\r",
+							"        pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							"else {\r",
+							"    pm.test(\"Connection failed and status code is 500\", function () {\r",
+							"        pm.response.to.have.status(500);\r",
+							"    });\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/admin/healthcheck",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"admin",
+						"healthcheck"
+					]
+				},
+				"description": "It returns the status of the database."
+			},
+			"response": []
+		},
+		{
+			"name": "Passes Per Station",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if ( pm.response.code != 500 ) {\r",
+							"pm.test(\"In success status 200 is returned\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"pm.sendRequest(\"http://localhost:9103/interoperability/api/PassesPerStation/KO447/2019-01-01 08:00:00/2019-01-10 08:00:00\", (err, response) => {\r",
+							"    pm.test(\"Returns 'Bad station request' and status 400\", () => {\r",
+							"        pm.expect(response).to.have.property('code', 400);\r",
+							"        pm.expect(response.json()).to.eql(\"Bad station request\");\r",
+							"        pm.expect(response.responseTime).to.be.below(200);\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"pm.sendRequest(\"http://localhost:9103/interoperability/api/PassesPerStation/GF00/2019-02-10 08:00:00/2019-01-10 08:00:00\", (err, response) => {\r",
+							"    pm.test(\"Returns 'date_from' can't be greater than 'date_to' and status 400\", () => {\r",
+							"        pm.expect(response).to.have.property('code', 400);\r",
+							"        pm.expect(response.responseTime).to.be.below(200);\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"pm.sendRequest(\"http://localhost:9103/interoperability/api/PassesPerStation/NE00/2022-01-01 08:00:00/2023-01-10 08:00:00\", (err, response) => {\r",
+							"    pm.test(\"Returns 'No data' and status 402\", () => {\r",
+							"        pm.expect(response).to.have.property('code', 402);\r",
+							"        pm.expect(response.json()).to.eql(\"No data\");\r",
+							"        pm.expect(response.responseTime).to.be.below(200);\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"pm.sendRequest(\"http://localhost:9103/interoperability/api/PassesPerStation/AO14/2019-01-01 08:00:00/2019-02-01 08:00:00\", (err, response) => {\r",
+							"    pm.test(\"Vehicle ABE2129498 having aodos tag passed from AO14, paid 1 and status code is 200\", () => {\r",
+							"        var jsonData = response.json();\r",
+							"        pm.expect(jsonData[0].Tag_Provider).to.eql(\"aodos\");\r",
+							"        pm.expect(jsonData[0].Pass_ID).to.eql(\"ABE2129498\");\r",
+							"        pm.expect(jsonData[0].Amount).to.eql(1);\r",
+							"        pm.expect(response).to.have.property('code', 200);\r",
+							"        pm.expect(response.responseTime).to.be.below(200);\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"pm.sendRequest(\"http://localhost:9103/interoperability/api/PassesPerStation/KO00/2019-01-01 08:00:00/2019-02-01 08:00:00?format=csv\", (err, response) => {\r",
+							"    pm.test(\"csv returns status 200\", () => {\r",
+							"        pm.expect(response).to.have.property('code', 200);\r",
+							"        pm.expect(response.responseTime).to.be.below(200);\r",
+							"    });\r",
+							"});\r",
+							"}\r",
+							"else {\r",
+							"    pm.test(\"Connection failed and status code is 500\", function () {\r",
+							"        pm.response.to.have.status(500);\r",
+							"    });\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/PassesPerStation/:stationID/:date_from/:date_to",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"PassesPerStation",
+						":stationID",
+						":date_from",
+						":date_to"
+					],
+					"variable": [
+						{
+							"key": "stationID",
+							"value": "EG03"
+						},
+						{
+							"key": "date_from",
+							"value": "2019-01-10 08:04:10"
+						},
+						{
+							"key": "date_to",
+							"value": "2019-01-29 08:04:10"
+						}
+					]
+				},
+				"description": "It returnes a list with the analysis of passes for the given toll station in the given period."
+			},
+			"response": []
+		},
+		{
+			"name": "Passes Analysis",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code != 500) {\r",
+							"    pm.test(\"In success status 200 is returned\", () => {\r",
+							"        pm.response.to.have.status(200);\r",
+							"        pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"    });\r",
+							"\r",
+							"    pm.sendRequest(\"http://localhost:9103/interoperability/api/PassesAnalysis/aodos/aodos/2019-01-01 08:00:00/2019-01-10 08:00:00\", (err, response) => {\r",
+							"        pm.test(\"Returns 'op1_ID can't be equal to op2_ID' and status 400\", () => {\r",
+							"            pm.expect(response).to.have.property('code', 400);\r",
+							"            pm.expect(response.json()).to.eql(\"op1_ID can't be equal to op2_ID\");\r",
+							"            pm.expect(response.responseTime).to.be.below(200);\r",
+							"        });\r",
+							"    });\r",
+							"\r",
+							"    pm.sendRequest(\"http://localhost:9103/interoperability/api/PassesAnalysis/ /aodos/2019-01-01 08:00:00/2019-01-10 08:00:00\", (err, response) => {\r",
+							"        pm.test(\"Returns 'Bad company request(op1_ID doesn't exist)' and status 400\", () => {\r",
+							"            pm.expect(response).to.have.property('code', 400);\r",
+							"            pm.expect(response.json()).to.eql(\"Bad company request(op1_ID doesn't exist)\");\r",
+							"            pm.expect(response.responseTime).to.be.below(200);\r",
+							"        });\r",
+							"    });\r",
+							"\r",
+							"    pm.sendRequest(\"http://localhost:9103/interoperability/api/PassesAnalysis/kentriki_odos/aodos1/2019-01-01 08:00:00/2019-01-10 08:00:00\", (err, response) => {\r",
+							"        pm.test(\"Returns 'Bad company request(op2_ID doesn't exist)' and status 400\", () => {\r",
+							"            pm.expect(response).to.have.property('code', 400);\r",
+							"            pm.expect(response.json()).to.eql(\"Bad company request(op2_ID doesn't exist)\");\r",
+							"            pm.expect(response.responseTime).to.be.below(200);\r",
+							"        });\r",
+							"    });\r",
+							"\r",
+							"    pm.sendRequest(\"http://localhost:9103/interoperability/api/PassesAnalysis/gefyra/aodos/2019-02-01 08:00:00/2019-01-10 08:00:00\", (err, response) => {\r",
+							"        pm.test(\"Returns 'date_from' can't be greater than 'date_to' and status 400\", () => {\r",
+							"            pm.expect(response).to.have.property('code', 400);\r",
+							"            pm.expect(response.json()).to.eql(\"'date_from' can't be greater than 'date_to'\");\r",
+							"            pm.expect(response.responseTime).to.be.below(200);\r",
+							"        });\r",
+							"    });\r",
+							"\r",
+							"    pm.sendRequest(\"http://localhost:9103/interoperability/api/PassesAnalysis/moreas/olympia_odos/2022-01-01 08:00:00/2023-01-10 08:00:00\", (err, response) => {\r",
+							"        pm.test(\"Returns 'No data' and status 402\", () => {\r",
+							"            pm.expect(response).to.have.property('code', 402);\r",
+							"            pm.expect(response.json()).to.eql(\"No data\");\r",
+							"            pm.expect(response.responseTime).to.be.below(200);\r",
+							"        });\r",
+							"    });\r",
+							"\r",
+							"    pm.sendRequest(\"http://localhost:9103/interoperability/api/PassesAnalysis/kentriki_odos/moreas/2020-01-01 08:00:00/2021-02-01 08:00:00\", (err, response) => {\r",
+							"        pm.test(\"Vehicle HA82SCK64299 passed from a moreas station, paid 1.5 and status code is 200\", () => {\r",
+							"            var jsonData = response.json();\r",
+							"            pm.expect(jsonData[1].Tag_Provider).to.eql(\"moreas\");\r",
+							"            pm.expect(jsonData[1].Vehicle_ID).to.eql(\"HA82SCK64299\");\r",
+							"            pm.expect(jsonData[1].Amount).to.eql(1.5);\r",
+							"            pm.expect(response).to.have.property('code', 200);\r",
+							"            pm.expect(response.responseTime).to.be.below(200);\r",
+							"        });\r",
+							"    });\r",
+							"\r",
+							"    pm.sendRequest(\"http://localhost:9103/interoperability/api/PassesAnalysis/kentriki_odos/egnatia/2019-01-01 08:00:00/2019-02-01 08:00:00?format=csv\", (err, response) => {\r",
+							"        pm.test(\"csv returns status 200\", () => {\r",
+							"            pm.expect(response).to.have.property('code', 200);\r",
+							"            pm.expect(response.responseTime).to.be.below(200);\r",
+							"        });\r",
+							"    });\r",
+							"}\r",
+							"else {\r",
+							"    pm.test(\"Connection failed and status code is 500\", function () {\r",
+							"        pm.response.to.have.status(500);\r",
+							"    });\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/PassesAnalysis/:op1_ID/:op2_ID/:date_from/:date_to",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"PassesAnalysis",
+						":op1_ID",
+						":op2_ID",
+						":date_from",
+						":date_to"
+					],
+					"variable": [
+						{
+							"key": "op1_ID",
+							"value": "aodos"
+						},
+						{
+							"key": "op2_ID",
+							"value": "moreas"
+						},
+						{
+							"key": "date_from",
+							"value": "2019-01-01 08:04:10"
+						},
+						{
+							"key": "date_to",
+							"value": "2019-01-20 08:04:10"
+						}
+					]
+				},
+				"description": "It returnes a list with the analysis of passes for all the tags of op2_ID that pass through toll stations of op1_ID in the given period."
+			},
+			"response": []
+		},
+		{
+			"name": "Passes Cost",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code != 500) {\r",
+							"    pm.test(\"In success status 200 is returned\", () => {\r",
+							"        pm.response.to.have.status(200);\r",
+							"        pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"    });\r",
+							"\r",
+							"    pm.sendRequest(\"http://localhost:9103/interoperability/api/PassesCost/aodos/aodos/2019-01-01 08:00:00/2019-01-10 08:00:00\", (err, response) => {\r",
+							"        pm.test(\"Returns 'op1_ID can't be equal to op2_ID' and status 400\", () => {\r",
+							"            pm.expect(response).to.have.property('code', 400);\r",
+							"            pm.expect(response.json()).to.eql(\"op1_ID can't be equal to op2_ID\");\r",
+							"            pm.expect(response.responseTime).to.be.below(200);\r",
+							"        });\r",
+							"    });\r",
+							"\r",
+							"    pm.sendRequest(\"http://localhost:9103/interoperability/api/PassesCost/kentriki_odos1/aodos/2019-01-01 08:00:00/2019-01-10 08:00:00\", (err, response) => {\r",
+							"        pm.test(\"Returns 'Bad company request(op1_ID doesn't exist)' and status 400\", () => {\r",
+							"            pm.expect(response).to.have.property('code', 400);\r",
+							"            pm.expect(response.json()).to.eql(\"Bad company request(op1_ID doesn't exist)\");\r",
+							"            pm.expect(response.responseTime).to.be.below(200);\r",
+							"        });\r",
+							"    });\r",
+							"\r",
+							"    pm.sendRequest(\"http://localhost:9103/interoperability/api/PassesCost/kentriki_odos/aodos1/2019-01-01 08:00:00/2019-01-10 08:00:00\", (err, response) => {\r",
+							"        pm.test(\"Returns 'Bad company request(op2_ID doesn't exist)' and status 400\", () => {\r",
+							"            pm.expect(response).to.have.property('code', 400);\r",
+							"            pm.expect(response.json()).to.eql(\"Bad company request(op2_ID doesn't exist)\");\r",
+							"            pm.expect(response.responseTime).to.be.below(200);\r",
+							"        });\r",
+							"    });\r",
+							"\r",
+							"    pm.sendRequest(\"http://localhost:9103/interoperability/api/PassesCost/gefyra/aodos/2019-02-01 08:00:00/2019-01-10 08:00:00\", (err, response) => {\r",
+							"        pm.test(\"Returns 'date_from' can't be greater than 'date_to' and status 400\", () => {\r",
+							"            pm.expect(response).to.have.property('code', 400);\r",
+							"            pm.expect(response.json()).to.eql(\"'date_from' can't be greater than 'date_to'\");\r",
+							"            pm.expect(response.responseTime).to.be.below(200);\r",
+							"        });\r",
+							"    });\r",
+							"\r",
+							"    pm.sendRequest(\"http://localhost:9103/interoperability/api/PassesCost/moreas/olympia_odos/2022-01-01 08:00:00/2023-01-10 08:00:00\", (err, response) => {\r",
+							"        pm.test(\"Returns 'No data' and status 402\", () => {\r",
+							"            pm.expect(response).to.have.property('code', 402);\r",
+							"            pm.expect(response.json()).to.eql(\"No data\");\r",
+							"            pm.expect(response.responseTime).to.be.below(200);\r",
+							"        });\r",
+							"    });\r",
+							"\r",
+							"    pm.sendRequest(\"http://localhost:9103/interoperability/api/PassesCost/kentriki_odos/moreas/2019-01-01 08:00:00/2019-02-01 08:00:00\", (err, response) => {\r",
+							"        pm.test(\"Sum_Amount from moreas should be 1.5(for Jan 2019), and status 200\", () => {\r",
+							"            var jsonData = response.json();\r",
+							"            pm.expect(jsonData[0].Tag_Provider).to.eql(\"moreas\");\r",
+							"            pm.expect(jsonData[0].Sum_Amount).to.eql(1.5);\r",
+							"            pm.expect(response).to.have.property('code', 200);\r",
+							"            pm.expect(response.responseTime).to.be.below(200);\r",
+							"        });\r",
+							"    });\r",
+							"\r",
+							"    pm.sendRequest(\"http://localhost:9103/interoperability/api/PassesCost/kentriki_odos/egnatia/2019-01-01 08:00:00/2019-02-01 08:00:00?format=csv\", (err, response) => {\r",
+							"        pm.test(\"csv returns status 200\", () => {\r",
+							"            pm.expect(response).to.have.property('code', 200);\r",
+							"            pm.expect(response.responseTime).to.be.below(200);\r",
+							"        });\r",
+							"    });\r",
+							"}\r",
+							"else {\r",
+							"    pm.test(\"Connection failed and status code is 500\", function () {\r",
+							"        pm.response.to.have.status(500);\r",
+							"    });\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/PassesCost/:op1_ID/:op2_ID/:date_from/:date_to?format=json",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"PassesCost",
+						":op1_ID",
+						":op2_ID",
+						":date_from",
+						":date_to"
+					],
+					"query": [
+						{
+							"key": "format",
+							"value": "json"
+						}
+					],
+					"variable": [
+						{
+							"key": "op1_ID",
+							"value": "aodos"
+						},
+						{
+							"key": "op2_ID",
+							"value": "moreas"
+						},
+						{
+							"key": "date_from",
+							"value": "2019-01-01 08:00:00"
+						},
+						{
+							"key": "date_to",
+							"value": "2019-02-01 08:00:00"
+						}
+					]
+				},
+				"description": "It returns a list containing the number of passes of tags from op2_ID, through toll stations of op1_ID and the total amount that op2_ID owes op1_ID in the given period."
+			},
+			"response": []
+		},
+		{
+			"name": "Charges By",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code != 500) {\r",
+							"    pm.test(\"In success status 200 is returned\", () => {\r",
+							"        pm.response.to.have.status(200);\r",
+							"        pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"    });\r",
+							"\r",
+							"    pm.sendRequest(\"http://localhost:9103/interoperability/api/ChargesBy/kentriki_odos1/2019-01-01 08:00:00/2019-01-10 08:00:00\", (err, response) => {\r",
+							"        pm.test(\"Returns 'Bad company request(op_ID doesn't exist)' and status 400\", () => {\r",
+							"            pm.expect(response).to.have.property('code', 400);\r",
+							"            pm.expect(response.json()).to.eql(\"Bad company request(op_ID doesn't exist)\");\r",
+							"            pm.expect(response.responseTime).to.be.below(200);\r",
+							"        });\r",
+							"    });\r",
+							"\r",
+							"    pm.sendRequest(\"http://localhost:9103/interoperability/api/ChargesBy/gefyra/2019-02-01 08:00:00/2019-01-10 08:00:00\", (err, response) => {\r",
+							"        pm.test(\"Returns 'date_from' can't be greater than 'date_to' and status 400\", () => {\r",
+							"            pm.expect(response).to.have.property('code', 400);\r",
+							"            pm.expect(response.json()).to.eql(\"'date_from' can't be greater than 'date_to'\");\r",
+							"            pm.expect(response.responseTime).to.be.below(200);\r",
+							"        });\r",
+							"    });\r",
+							"\r",
+							"    pm.sendRequest(\"http://localhost:9103/interoperability/api/ChargesBy/moreas/2022-01-01 08:00:00/2023-01-10 08:00:00\", (err, response) => {\r",
+							"        pm.test(\"Returns 'No data' and status 402\", () => {\r",
+							"            pm.expect(response).to.have.property('code', 402);\r",
+							"            pm.expect(response.json()).to.eql(\"No data\");\r",
+							"            pm.expect(response.responseTime).to.be.below(200);\r",
+							"        });\r",
+							"    });\r",
+							"\r",
+							"    pm.sendRequest(\"http://localhost:9103/interoperability/api/ChargesBy/kentriki_odos/2019-01-01 08:00:00/2019-02-01 08:00:00\", (err, response) => {\r",
+							"        pm.test(\"Sum_Amount from aodos should be 6(for Jan 2019), and status 200\", () => {\r",
+							"            var jsonData = response.json();\r",
+							"            pm.expect(jsonData[0].Tag_Provider).to.eql(\"aodos\");\r",
+							"            pm.expect(jsonData[0].Sum_Amount).to.eql(6);\r",
+							"            pm.expect(response).to.have.property('code', 200);\r",
+							"            pm.expect(response.responseTime).to.be.below(200);\r",
+							"        });\r",
+							"    });\r",
+							"\r",
+							"    pm.sendRequest(\"http://localhost:9103/interoperability/api/ChargesBy/kentriki_odos/2019-01-01 08:00:00/2019-02-01 08:00:00?format=csv\", (err, response) => {\r",
+							"        pm.test(\"csv returns status 200\", () => {\r",
+							"            pm.expect(response).to.have.property('code', 200);\r",
+							"            pm.expect(response.responseTime).to.be.below(200);\r",
+							"        });\r",
+							"    });\r",
+							"}\r",
+							"else {\r",
+							"    pm.test(\"Connection failed and status code is 500\", function () {\r",
+							"        pm.response.to.have.status(500);\r",
+							"    });\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/ChargesBy/:op_ID/:date_from/:date_to",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"ChargesBy",
+						":op_ID",
+						":date_from",
+						":date_to"
+					],
+					"variable": [
+						{
+							"key": "op_ID",
+							"value": "kentriki_odos"
+						},
+						{
+							"key": "date_from",
+							"value": "2019-01-01 08:00:00"
+						},
+						{
+							"key": "date_to",
+							"value": "2019-01-25 08:00:00"
+						}
+					]
+				},
+				"description": "It returns a list of lists containing the number of passes of tags from an 'operator' and the total cost that 'operator' owes op_ID in the given period.\n\nIt returns a list for every operator that isn't op_ID."
+			},
+			"response": []
+		},
+		{
+			"name": "Reset Passes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if ( pm.response.code != 500 ) {\r",
+							"pm.test(\"In success status 200 is returned\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"}\r",
+							"else {\r",
+							"    pm.test(\"Connection failed and status code is 500\", function () {\r",
+							"        pm.response.to.have.status(500);\r",
+							"    });\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/admin/resetpasses",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"admin",
+						"resetpasses"
+					]
+				},
+				"description": "If successful, it deletes all data in \\`passes\\` table, else an error is returned."
+			},
+			"response": []
+		},
+		{
+			"name": "Reset Stations",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if ( pm.response.code != 500 ) {\r",
+							"pm.test(\"In success status 200 is returned\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"}\r",
+							"else {\r",
+							"    pm.test(\"Connection failed and status code is 500\", function () {\r",
+							"        pm.response.to.have.status(500);\r",
+							"    });\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/admin/resetstations",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"admin",
+						"resetstations"
+					]
+				},
+				"description": "If successful, it initializes all data in \\`station\\` table, else an error is returned."
+			},
+			"response": []
+		},
+		{
+			"name": "Reset Vehicles",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if ( pm.response.code != 500 ) {\r",
+							"pm.test(\"In success status 200 is returned\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"}\r",
+							"else {\r",
+							"    pm.test(\"Connection failed and status code is 500\", function () {\r",
+							"        pm.response.to.have.status(500);\r",
+							"    });\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/admin/resetvehicles",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"admin",
+						"resetvehicles"
+					]
+				},
+				"description": "If successful, it initializes all data in \\`vehicles\\` table, else an error is returned."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseURL",
+			"value": "http://localhost:9103/interoperability/api"
+		}
+	]
+}
